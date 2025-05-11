@@ -1,0 +1,65 @@
+/* Main Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Product card styles */
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Product rating stars */
+.bi-star-fill,
+.bi-star-half,
+.bi-star {
+    font-size: 0.8rem;
+}
+
+/* Cart quantity input */
+.cart-quantity-input {
+    width: 60px !important;
+}
+
+/* Progress tracking */
+.tracking-progress {
+    position: relative;
+    height: 5px;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+    margin-bottom: 2rem;
+}
+
+.tracking-progress-bar {
+    height: 100%;
+    border-radius: 0.25rem;
+}
+
+.tracking-step {
+    position: absolute;
+    transform: translateX(-50%);
+    top: -10px;
+}
+
+.tracking-step-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+/* Search Filters */
+.filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.filter-heading {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+} 

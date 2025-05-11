@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Отслеживание заказа №{{ order.id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('order.order_list') }}">Мои заказы</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('order.order_detail', order_id=order.id) }}">Заказ №{{ order.id }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Отслеживание</li>
+    </ol>
+</nav>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Отслеживание заказа №{{ order.id }}</h5>
+        <span class="badge bg-{% if order.status.value == 'created' %}secondary{% elif order.status.value == 'processing' %}primary{% elif order.status.value == 'shipping' %}info{% elif order.status.value == 'delivered' %}success{% elif order.status.value == 'cancelled' %}danger{% endif %}">
+            {% if order.status.value == 'created' %}
+            Создан
+            {% elif order.status.value == 'processing' %}
+            В обработке
+            {% elif order.status.value == 'shipping' %}
+            Доставляется
+            {% elif order.status.value == 'delivered' %}
+            Доставлен
+            {% elif order.status.value == 'cancelled' %}
+            Отменен
+            {% endif %}
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p>Дата заказа: {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                <p>Сумма заказа: <span class="fw-bold">{{ order.total_amount }} ₽</span></p>
+            </div>
+            <div class="col-md-6">
+                <p>
+                    Способ доставки: 
+                    {% if order.delivery_method.value == 'standard' %}
+                    <i class="bi bi-truck text-success"></i> Стандартная доставка
+                    {% elif order.delivery_method.value == 'express' %}
+                    <i class="bi bi-lightning-charge text-warning"></i> Экспресс-доставка
+                    {% elif order.delivery_method.value == 'pickup' %}
+                    <i class="bi bi-shop text-primary"></i> Самовывоз
+                    {% endif %}
+                </p>
+                <p>Адрес доставки: {{ order.delivery_address }}</p>
+            </div>
+        </div>
+        
+        <h5 class="mb-4">Статус доставки</h5>
+        
+        <div class="position-relative mb-4">
+            <div class="progress" style="height: 5px;">
+                {% if order.status.value == 'cancelled' %}
+                <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                {% else %}
+                <div class="progress-bar bg-success" role="progressbar" 
+                    {% if order.status.value == 'created' %}
+                    style="width: 25%"
+                    {% elif order.status.value == 'processing' %}
+                    style="width: 50%"
+                    {% elif order.status.value == 'shipping' %}
+                    style="width: 75%"
+                    {% elif order.status.value == 'delivered' %}
+                    style="width: 100%"
+                    {% endif %}></div>
+                {% endif %}
+            </div>
+            
+            {% if order.status.value != 'cancelled' %}
+            <div class="d-flex justify-content-between mt-3">
+                <div class="text-center">
+                    <div class="rounded-circle {% if order.status.value in ['created', 'processing', 'shipping', 'delivered'] %}bg-success{% else %}bg-light border{% endif %} text-white d-flex align-items-center justify-content-center mx-auto" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <div class="mt-2">Создан</div>
+                </div>
+                <div class="text-center">
+                    <div class="rounded-circle {% if order.status.value in ['processing', 'shipping', 'delivered'] %}bg-success{% else %}bg-light border{% endif %} text-white d-flex align-items-center justify-content-center mx-auto" style="width: 40px; height: 40px;">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <div class="mt-2">В обработке</div>
+                </div>
+                <div class="text-center">
+                    <div class="rounded-circle {% if order.status.value in ['shipping', 'delivered'] %}bg-success{% else %}bg-light border{% endif %} text-white d-flex align-items-center justify-content-center mx-auto" style="width: 40px; height: 40px;">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div class="mt-2">Доставляется</div>
+                </div>
+                <div class="text-center">
+                    <div class="rounded-circle {% if order.status.value == 'delivered' %}bg-success{% else %}bg-light border{% endif %} text-white d-flex align-items-center justify-content-center mx-auto" style="width: 40px; height: 40px;">
+                        <i class="bi bi-house-check"></i>
+                    </div>
+                    <div class="mt-2">Доставлен</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center mt-3">
+                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center mx-auto" style="width: 40px; height: 40px;">
+                    <i class="bi bi-x-lg"></i>
+                </div>
+                <div class="mt-2">Заказ отменен</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <h5 class="mb-3">История изменений статуса</h5>
+        
+        <div class="list-group">
+            {% for status_change in status_changes %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <span class="badge bg-{% if status_change.new_status.value == 'created' %}secondary{% elif status_change.new_status.value == 'processing' %}primary{% elif status_change.new_status.value == 'shipping' %}info{% elif status_change.new_status.value == 'delivered' %}success{% elif status_change.new_status.value == 'cancelled' %}danger{% endif %}">
+                            {% if status_change.new_status.value == 'created' %}
+                            Создан
+                            {% elif status_change.new_status.value == 'processing' %}
+                            В обработке
+                            {% elif status_change.new_status.value == 'shipping' %}
+                            Доставляется
+                            {% elif status_change.new_status.value == 'delivered' %}
+                            Доставлен
+                            {% elif status_change.new_status.value == 'cancelled' %}
+                            Отменен
+                            {% endif %}
+                        </span>
+                        
+                        {% if status_change.old_status %}
+                        <span class="text-muted small">
+                            (от
+                            {% if status_change.old_status.value == 'created' %}
+                            "Создан"
+                            {% elif status_change.old_status.value == 'processing' %}
+                            "В обработке"
+                            {% elif status_change.old_status.value == 'shipping' %}
+                            "Доставляется"
+                            {% elif status_change.old_status.value == 'delivered' %}
+                            "Доставлен"
+                            {% elif status_change.old_status.value == 'cancelled' %}
+                            "Отменен"
+                            {% endif %}
+                            )
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="text-muted">{{ status_change.timestamp.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('order.order_detail', order_id=order.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> К деталям заказа
+            </a>
+            
+            {% if order.status.value in ['created', 'processing'] %}
+            <form action="{{ url_for('order.cancel_order', order_id=order.id) }}" method="post" onsubmit="return confirm('Вы уверены, что хотите отменить заказ?');">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-x-circle"></i> Отменить заказ
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

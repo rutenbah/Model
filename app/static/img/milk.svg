@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <path d="M24,8 L40,8 L42,16 L22,16 Z" fill="#B3E5FC" />
+  <path d="M22,16 L42,16 L40,56 C40,56 38,58 32,58 C26,58 24,56 24,56 Z" fill="#FFFFFF" stroke="#B3E5FC" stroke-width="2" />
+  <text x="32" y="40" font-family="Arial" font-size="10" text-anchor="middle" fill="#2196F3">3.2%</text>
+</svg> 

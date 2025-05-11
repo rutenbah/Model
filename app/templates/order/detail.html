@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ №{{ order.id }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('order.order_list') }}">Мои заказы</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Заказ №{{ order.id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Заказ №{{ order.id }}</h5>
+                <a href="{{ url_for('order.track_order', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-truck"></i> Отследить статус
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Статус заказа</h6>
+                        <p>
+                            {% if order.status.value == 'created' %}
+                            <span class="badge bg-secondary">Создан</span>
+                            {% elif order.status.value == 'processing' %}
+                            <span class="badge bg-primary">В обработке</span>
+                            {% elif order.status.value == 'shipping' %}
+                            <span class="badge bg-info">Доставляется</span>
+                            {% elif order.status.value == 'delivered' %}
+                            <span class="badge bg-success">Доставлен</span>
+                            {% elif order.status.value == 'cancelled' %}
+                            <span class="badge bg-danger">Отменен</span>
+                            {% endif %}
+                        </p>
+                        
+                        <h6>Дата заказа</h6>
+                        <p>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Способ доставки</h6>
+                        <p>
+                            {% if order.delivery_method.value == 'standard' %}
+                            <i class="bi bi-truck text-success"></i> Стандартная доставка
+                            {% elif order.delivery_method.value == 'express' %}
+                            <i class="bi bi-lightning-charge text-warning"></i> Экспресс-доставка
+                            {% elif order.delivery_method.value == 'pickup' %}
+                            <i class="bi bi-shop text-primary"></i> Самовывоз
+                            {% endif %}
+                        </p>
+                        
+                        <h6>Способ оплаты</h6>
+                        <p>
+                            {% if order.payment_method.value == 'credit_card' %}
+                            <i class="bi bi-credit-card text-primary"></i> Банковская карта
+                            {% elif order.payment_method.value == 'cash' %}
+                            <i class="bi bi-cash text-success"></i> Наличные при получении
+                            {% elif order.payment_method.value == 'bank_transfer' %}
+                            <i class="bi bi-bank text-secondary"></i> Банковский перевод
+                            {% elif order.payment_method.value == 'online_payment' %}
+                            <i class="bi bi-globe text-info"></i> Онлайн-платеж
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Адрес доставки</h6>
+                    <p>{{ order.delivery_address }}</p>
+                </div>
+                
+                <hr>
+                
+                <h6 class="mb-3">Товары в заказе</h6>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Товар</th>
+                                <th class="text-center">Количество</th>
+                                <th class="text-end">Цена</th>
+                                <th class="text-end">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3" style="width: 50px; height: 50px;">
+                                            {% if item.product.image_path %}
+                                            <img src="{{ item.product.image_path }}" alt="{{ item.product.name }}" class="img-thumbnail" style="max-width: 100%; max-height: 100%;">
+                                            {% else %}
+                                            <img src="{{ url_for('static', filename='img/no-image.png') }}" alt="Нет изображения" class="img-thumbnail" style="max-width: 100%; max-height: 100%;">
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                                            <small class="text-muted">
+                                                {{ item.product.category.name if item.product.category else 'Без категории' }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end">{{ item.price }} ₽</td>
+                                <td class="text-end">{{ item.subtotal }} ₽</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end">Сумма заказа:</td>
+                                <td class="text-end fw-bold">{{ order.total_amount }} ₽</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end">Доставка:</td>
+                                <td class="text-end">Бесплатно</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end">Итого к оплате:</td>
+                                <td class="text-end fw-bold fs-5 text-success">{{ order.total_amount }} ₽</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('order.order_list') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> К списку заказов
+                    </a>
+                    
+                    {% if order.status.value in ['created', 'processing'] %}
+                    <form action="{{ url_for('order.cancel_order', order_id=order.id) }}" method="post" onsubmit="return confirm('Вы уверены, что хотите отменить заказ?');">
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle"></i> Отменить заказ
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">История статусов</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for status_change in order.status_changes %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                {% if status_change.new_status.value == 'created' %}
+                                <span class="badge bg-secondary">Создан</span>
+                                {% elif status_change.new_status.value == 'processing' %}
+                                <span class="badge bg-primary">В обработке</span>
+                                {% elif status_change.new_status.value == 'shipping' %}
+                                <span class="badge bg-info">Доставляется</span>
+                                {% elif status_change.new_status.value == 'delivered' %}
+                                <span class="badge bg-success">Доставлен</span>
+                                {% elif status_change.new_status.value == 'cancelled' %}
+                                <span class="badge bg-danger">Отменен</span>
+                                {% endif %}
+                                
+                                {% if status_change.old_status %}
+                                <small class="text-muted">
+                                    (от 
+                                    {% if status_change.old_status.value == 'created' %}
+                                    "Создан"
+                                    {% elif status_change.old_status.value == 'processing' %}
+                                    "В обработке"
+                                    {% elif status_change.old_status.value == 'shipping' %}
+                                    "Доставляется"
+                                    {% elif status_change.old_status.value == 'delivered' %}
+                                    "Доставлен"
+                                    {% elif status_change.old_status.value == 'cancelled' %}
+                                    "Отменен"
+                                    {% endif %}
+                                    )
+                                </small>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {{ status_change.timestamp.strftime('%d.%m.%Y %H:%M') }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

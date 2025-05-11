@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Детали товара{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('catalog.index') }}">Каталог</a></li>
+        {% if product.category %}
+        <li class="breadcrumb-item"><a href="{{ url_for('catalog.category_products', category_id=product.category.id) }}">{{ product.category.name }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-4">
+            {% if product.image_path %}
+            <img src="{{ product.image_path }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='img/no-image.png') }}" class="img-fluid rounded" alt="Нет изображения">
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <h1 class="mb-3">{{ product.name }}</h1>
+        
+        <div class="d-flex mb-3">
+            {% for i in range(5) %}
+            <i class="bi {% if i < product.rating|int %}bi-star-fill{% elif i < product.rating %}bi-star-half{% else %}bi-star{% endif %} text-warning"></i>
+            {% endfor %}
+            <span class="ms-2">{{ product.rating }} / 5</span>
+        </div>
+        
+        <p class="lead">{{ product.description }}</p>
+        
+        <div class="d-flex flex-column mb-4">
+            <div class="mb-2">
+                <strong>Производитель:</strong> {{ product.manufacturer }}
+            </div>
+            <div class="mb-2">
+                <strong>Категория:</strong> 
+                {% if product.category %}
+                <a href="{{ url_for('catalog.category_products', category_id=product.category.id) }}">
+                    {{ product.category.name }}
+                </a>
+                {% else %}
+                Без категории
+                {% endif %}
+            </div>
+            <div class="mb-2">
+                <strong>Наличие:</strong> 
+                {% if product.stock > 0 %}
+                <span class="text-success">В наличии ({{ product.stock }} шт.)</span>
+                {% else %}
+                <span class="text-danger">Нет в наличии</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <span class="fs-1 fw-bold text-success">{{ product.price }} ₽</span>
+        </div>
+        
+        <form action="{{ url_for('cart.add_to_cart') }}" method="post" class="mb-4">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="quantity" class="form-label">Количество:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}" style="width: 80px;">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-success btn-lg" {% if product.stock <= 0 %}disabled{% endif %}>
+                        <i class="bi bi-cart-plus"></i> Добавить в корзину
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="mb-4">Подробная информация</h2>
+        <div class="card">
+            <div class="card-body">
+                {{ product.description }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
